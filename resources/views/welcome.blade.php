@@ -2,8 +2,7 @@
 
 @section('content')
     @if (Auth::check())
-        <?php $user = Auth::user(); ?>
-        {{ $user->name }}
+      Route::get('/', TasksController@index)
     @else
         <div class="center jumbotron">
             <div class="text-center">
