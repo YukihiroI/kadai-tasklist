@@ -14,16 +14,17 @@ class TasksController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index()
-
     {
+        $data = [];
         if (\Auth::check()) {
-            $tasks =Task::all();
-            
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+
+
             return view('tasks.index',[
-            'tasks' =>$tasks,
-            ]);
-        }
-        else {
+                'tasks' =>$tasks,
+                ]);
+        }else {
             return view('welcome');
         }
     }
@@ -56,6 +57,7 @@ class TasksController extends Controller
         ]);
         $task = new Task;
         $task->status = $request->status;  //インスタンスの生成
+        $task->user_id = \Auth::user()->id;
         $task->content = $request->content;
         $task->save();
 
@@ -70,11 +72,17 @@ class TasksController extends Controller
      */
     public function show($id)
     {
-        $task = Task::find($id);
-
-        return view('tasks.show', [
-            'task' => $task,
-        ]);
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $task = Task::find($id);
+             if ($task->user_id == $user->id) {
+                return view('tasks.show', [
+                    'task' => $task
+            ]);
+       } else {
+            return redirect('/');
+           }
+         }
     }
 
     /**
@@ -85,11 +93,17 @@ class TasksController extends Controller
      */
     public function edit($id)
     {
-        $task = Task::find($id);
-
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $task = Task::find($id);
+             if ($task->user_id == $user->id) {
+                return view('tasks.edit', [
+                    'task' => $task
+            ]);
+       } else {
+            return redirect('/');
+           }
+         }
     }
 
     /**
@@ -120,7 +134,7 @@ class TasksController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id)
-    {
+   {
         $task = Task::find($id);
         $task->delete();
 
